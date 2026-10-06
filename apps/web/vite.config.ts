@@ -10,6 +10,7 @@ export default defineConfig({
   },
   server: {
     port: 5173,
+    allowedHosts: ["caracolesweb-production.up.railway.app"],
     proxy: { "/api": process.env.API_PROXY_TARGET ?? "http://localhost:3002" },
   },
 });
