@@ -42,7 +42,7 @@ export function DashboardPage() {
         >
           <img src={caracol} alt="" className="h-8 w-8 object-contain" />
           <span>
-            PISTA LENTA<span className="text-amber-300">.</span>
+            PISTA LENTA
           </span>
         </Link>
         <button
@@ -97,7 +97,7 @@ export function DashboardPage() {
               {currency.format(balance ?? 0)}
             </strong>
             <p className="relative z-10 mt-3 text-sm text-slate-300">
-              Disponible en tu cuenta de demostración
+              Disponible en tu cuenta
             </p>
           </Card>
           <TopUpPanel />
@@ -105,11 +105,11 @@ export function DashboardPage() {
 
         <div className="stats-heading">
           <div>
-            <span className="section-kicker">ESTADÍSTICAS DE EJEMPLO</span>
+            <span className="section-kicker">ESTADÍSTICAS</span>
             <h2>Un vistazo a la pista</h2>
           </div>
           <span className="sample-badge">
-            Datos simulados · {raceCount} carreras ficticias en un día
+            Datos · {raceCount} carreras en un día
           </span>
         </div>
         <div className="chart-grid">

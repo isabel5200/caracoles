@@ -27,11 +27,11 @@ export function AuthLayout({
             className="h-15 w-15 object-contain"
           />
           <span>
-            PISTA LENTA<span className="text-amber-300">.</span>
+            PISTA LENTA
           </span>
         </Link>
         <span className="hidden text-xs font-bold tracking-widest text-slate-300 sm:block">
-          UNA DEMO · SIN DINERO REAL
+          DEMO
         </span>
       </header>
       <main className="mx-auto grid w-full max-w-6xl flex-1 items-center gap-10 px-6 py-12 lg:grid-cols-[1fr_460px] lg:gap-16">
@@ -62,7 +62,7 @@ export function AuthLayout({
       </main>
       <footer className="flex flex-col justify-between gap-2 border-t border-white/10 bg-slate-900 px-6 py-6 text-xs tracking-wider text-slate-300 sm:flex-row sm:px-[5vw]">
         <span>PISTA LENTA © 2026</span>
-        <span>React · Express · TypeScript</span>
+        <span>DEMO</span>
       </footer>
     </div>
   );

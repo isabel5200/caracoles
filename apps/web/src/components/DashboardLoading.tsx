@@ -15,7 +15,7 @@ export function DashboardLoading() {
             alt=""
             className="h-8 w-8 object-contain"
           />
-          PISTA LENTA<span className="text-amber-300">.</span>
+          PISTA LENTA
         </span>
       </header>
 

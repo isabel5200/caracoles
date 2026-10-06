@@ -93,7 +93,7 @@ export function RegisterPage() {
     <AuthLayout
       eyebrow="TU NUEVA CUENTA"
       title="Todo empieza lento."
-      description="Crea tu cuenta con saldo inicial de $0. Después podrás cargar saldo con SnailPay, nuestra pasarela simulada."
+      description="Crea tu cuenta con saldo inicial de $0. Después podrás cargar saldo con SnailPay."
     >
       <CardHeader className="px-6 sm:px-9">
         <CardTitle className="font-serif text-3xl font-semibold tracking-tight text-slate-950">

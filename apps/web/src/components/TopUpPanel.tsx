@@ -9,7 +9,7 @@ import { LoadingSpiral } from "./LoadingSpiral";
 
 const messages: Record<SnailPayStatusDetail, string> = {
   accredited: "Recarga aprobada.",
-  card_declined: "La tarjeta ficticia fue rechazada.",
+  card_declined: "La tarjeta fue rechazada.",
   invalid_payment_data: "Revisa los datos de prueba y el monto.",
   unsupported_test_card: "Usa una de las tarjetas ficticias documentadas.",
   balance_limit: "El saldo superaría el límite de esta demostración.",
@@ -19,9 +19,9 @@ const messages: Record<SnailPayStatusDetail, string> = {
 export function TopUpPanel() {
   const { topUp, user } = useAuth();
   const [amount, setAmount] = useState(100);
-  const [cardNumber, setCardNumber] = useState("1234123412341234");
-  const [expiration, setExpiration] = useState("12/26");
-  const [cvv, setCvv] = useState("543");
+  const [cardNumber, setCardNumber] = useState("");
+  const [expiration, setExpiration] = useState("");
+  const [cvv, setCvv] = useState("");
   const [fullName, setFullName] = useState(user?.fullName ?? "");
   const [processing, setProcessing] = useState(false);
   const [error, setError] = useState("");
@@ -68,7 +68,6 @@ export function TopUpPanel() {
     <section className="topup-card" aria-labelledby="topup-title">
       <div className="card-heading">
         <div>
-          <span className="section-kicker">PASARELA SIMULADA</span>
           <h2 id="topup-title">Carga saldo con SnailPay</h2>
         </div>
       </div>
@@ -85,7 +84,7 @@ export function TopUpPanel() {
           required
           disabled={processing}
         />
-        <label htmlFor="topup-card">Número de tarjeta ficticia</label>
+        <label htmlFor="topup-card">Número de tarjeta</label>
         <input
           id="topup-card"
           value={cardNumber}
@@ -168,10 +167,6 @@ export function TopUpPanel() {
           {success}
         </div>
       )}
-      <small className="topup-disclaimer">
-        Prueba aprobada: 1234123412341234 · 12/26 · 543. Rechazo:
-        0000000000000000 · 12/26 · 000.
-      </small>
     </section>
   );
 }

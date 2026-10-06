@@ -63,7 +63,7 @@ export function LoginPage() {
 
   return (
     <AuthLayout
-      eyebrow="BIENVENIDO DE NUEVO"
+      eyebrow="BIENVENIDO"
       title="Entra a la pista."
       description="Inicia sesión para continuar con tu perfil y tu saldo de créditos."
     >
