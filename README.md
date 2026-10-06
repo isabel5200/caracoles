@@ -1,118 +1,161 @@
-# Pista Lenta · dashboard y autenticación
+# Pista Lenta — Documentación
 
-Base Full-Stack con React, Express y TypeScript estricto. Incluye registro, inicio de sesión, persistencia local, dashboard privado y cierre de sesión. Cada usuario nuevo empieza con **$0**. Las gráficas usan datos fijos de demostración: no hay flujo para apostar ni lógica que ejecute carreras.
+Repositorio: https://github.com/isabel5200/maria-2939 
 
-La interfaz usa Tailwind CSS v4 mediante `@tailwindcss/vite`. El plugin se agrega junto a React en `apps/web/vite.config.ts` y el CSS global importa `tailwindcss` desde `apps/web/src/styles.css`; no hace falta un archivo de configuración adicional para estos estilos. Chart.js dibuja las gráficas; el CSS propio mantiene su disposición, leyenda y el formulario de SnailPay.
+## Descripción
 
-shadcn/ui se inicializó en `apps/web`: `components.json` apunta al CSS global y el alias `@/` resuelve a `apps/web/src` tanto en Vite como en TypeScript. Se agregaron únicamente Button, Input, Label, Card, Alert y Badge bajo `src/components/ui/`. Login y registro usan estos componentes sin cambiar sus validaciones; el saldo usa Card y Badge. Como el proyecto usa TypeScript 7, el alias en `tsconfig.json` usa `paths` sin `baseUrl`.
+Aplicación de demostración con registro, inicio y cierre de sesión, dashboard privado y recargas ficticias. Cada usuario empieza con $0 MXN. El dashboard muestra gráficas de resultados simulados; no hay flujo para apostar ni ejecutar carreras.
 
-## Ejecutar
 
-Requiere Node.js 22.12 o superior y npm. Desde la raíz del proyecto:
+## Tecnologías utilizadas
+| Tecnología | Uso |
+| --- | --- |
+| React 19 y React Router 7 | Componentes, estado y navegación del frontend. |
+| TypeScript 7 | Tipado en frontend, backend y contratos compartidos. |
+| Node.js y Express 5 | API HTTP, middleware y procesamiento de solicitudes. |
+| Vite 8 | Servidor de desarrollo y compilación del frontend. |
+| Tailwind CSS 4, CSS propio y shadcn/ui | Estilos y componentes de formularios, tarjetas y mensajes. |
+| Base UI, class-variance-authority y cn | Primitivas y composición de estilos de los componentes. |
+| Chart.js 4 | Gráficas de dona y barras con datos ficticios. |
+| bcryptjs y jsonwebtoken | Hash de contraseñas y autenticación mediante JWT. |
+| npm Workspaces, tsx, concurrently y Prettier | Organización de paquetes, ejecución en desarrollo y formato. |
+| node:test y node:assert/strict | Ejecución de tests y comprobación de resultados. |
 
-```bash
-npm install
-```
+- `apps/api/src`: rutas → controladores → servicios → repositorio; middleware verifica JWT y utils agrupa errores y conversiones.
+- `apps/web/src`: páginas, componentes, contexto de autenticación, hook useAuth, servicios HTTP, utilidades y estadísticas simuladas.
+- `packages/shared`: tipos comunes de usuario, sesión, solicitudes y operaciones.
+- `apps/web/src/assets/caracol.png`: imagen del caracol.
 
-Copia `apps/api/.env.example` a `apps/api/.env` y configura `JWT_SECRET` con una cadena aleatoria de al menos 32 caracteres. Puedes generar una con `node -e "console.log(require('node:crypto').randomBytes(32).toString('hex'))"`.
+LocalStorage guarda la sesión bajo `snailBetSession`: usuario público, JWT, saldo y última operación. El servidor guarda usuarios, hashes y saldo en `apps/api/data/users.json`, excluido de Git. No utiliza una base de datos.
 
-```bash
-npm run dev
-```
+## Flujos y API
 
-Web: <http://localhost:5173> · API: <http://localhost:3002/api/health>
+Registro valida campos y correo duplicado, genera un hash bcrypt y crea el usuario. Login devuelve usuario, token y saldo. El JWT vence a las dos horas. Al restaurar la sesión se consulta al servidor para actualizar usuario y saldo; logout borra la sesión local.
 
-Si el puerto 3001 aún está ocupado por una versión anterior de la API, esta configuración usa 3002 para evitar que Vite envíe las recargas a la instancia antigua (que responde 404 a `/api/wallet/top-up`). Reinicia el frontend para que cargue el proxy actualizado. Si ya tienes `apps/api/.env`, configura allí `PORT=3002`.
+| Método y ruta | Función |
+| --- | --- |
+| GET /api/health | Estado de la API. |
+| POST /api/auth/register | Registro. |
+| POST /api/auth/login | Inicio de sesión. |
+| GET /api/auth/me | Usuario y saldo; requiere JWT. |
+| POST /api/wallet/top-up | Recarga ficticia; requiere JWT. |
 
-Para comprobar Tailwind manualmente, abre <http://localhost:5173/login>: el fondo oscuro (`bg-slate-950`), la tarjeta blanca y los estados de foco y hover del encabezado vienen de sus clases. Entra al dashboard para ver la tarjeta de saldo `bg-slate-900`. El build de Vite también debe incluir esas utilidades en el CSS generado.
+SnailPay acredita solo operaciones aprobadas. El servidor obtiene el pagador desde la cuenta autenticada y calcula el saldo; el valor del navegador es una copia para mostrarlo.
 
-Para comprobar shadcn/ui, envía el formulario de login vacío: verás un Alert. Los campos son Input con Label y el botón de envío es Button; en el dashboard el saldo aparece dentro de Card con Badge.
+| Escenario | Datos de prueba | Respuesta |
+| --- | --- | --- |
+| Aprobación | Tarjeta 1234123412341234, vencimiento 12/26, CVV 543 | 200; suma el monto. |
+| Rechazo | Tarjeta 0000000000000000, vencimiento 12/26, CVV 000 | 402; conserva el saldo. |
+| Datos inválidos o combinación no admitida | Campos o monto inválidos | 422; conserva el saldo. |
+| Error simulado | SNAILPAY_MODE=system_error en la API | 503; conserva el saldo. |
 
-También están disponibles `npm run typecheck`, `npm run build`, `npm run format` y `npm test`. No hay un comando de lint configurado en esta base.
+## Instalación y scripts npm
 
-## Pruebas
+Requiere Node.js 22.12 o superior. Desde la raíz, ejecuta `npm ci`, copia `apps/api/.env.example` a `apps/api/.env` y configura `JWT_SECRET` con una cadena aleatoria de al menos 32 caracteres y `PORT=3002`. Después ejecuta `npm run dev`.
 
-Ejecuta `npm test` desde la raíz. Son cuatro pruebas en TypeScript usando el ejecutor de Node y `tsx`, que ya era una dependencia del backend. Tres comprueban registro, correo duplicado e inicio de sesión con un archivo temporal de usuarios; la cuarta guarda y recupera una sesión mediante la utilidad de LocalStorage y una implementación mínima en memoria. No requieren levantar la API ni el frontend.
+Frontend: http://localhost:5173. API: http://localhost:3002/api/health.
 
-## Estructura
+### Comandos desde la raíz
 
-```text
-apps/api/src/routes/          Endpoints HTTP
-apps/api/src/controllers/     Entrada y salida de las peticiones
-apps/api/src/services/        Validación y reglas de autenticación
-apps/api/src/repositories/    Usuarios en archivo JSON
-apps/api/src/middleware/      Verificación de JWT
-apps/web/src/pages/           Registro, login y dashboard
-apps/web/src/components/ui/  Componentes shadcn/ui seleccionados
-apps/web/src/context/         Estado de autenticación
-apps/web/src/services/        Llamadas HTTP y errores
-apps/web/src/mock/            Estadísticas ficticias para las gráficas
-apps/web/src/utils/           Acceso a LocalStorage
-packages/shared/             Contratos TypeScript compartidos
-```
+| Comando | Qué hace |
+| --- | --- |
+| npm run dev | Inicia API y frontend a la vez con concurrently. tsx observa cambios del backend y Vite sirve el frontend. |
+| npm run build | Compila la API a apps/api/dist y luego verifica tipos y genera apps/web/dist con Vite. Se detiene si falla una etapa. |
+| npm run typecheck | Comprueba tipos de API y frontend sin generar archivos. No ejecuta los tests. |
+| npm test / npm run test | Comprueba tipos con tsconfig.test.json y, si pasa, ejecuta los dos archivos de tests con node:test y tsx. No requiere levantar las aplicaciones. |
+| npm run format | Aplica Prettier y modifica el formato de los archivos incluidos. No es un linter. |
+| npm start / npm run start | Ejecuta solo la API compilada, con node dist/index.js. Requiere build previo. |
 
-## Flujo
+### Comandos de cada aplicación
 
-1. `POST /api/auth/register` valida los datos, comprueba correo duplicado y guarda el hash bcrypt de la contraseña. Responde `{ user }`, sin contraseña.
-2. `POST /api/auth/login` comprueba credenciales y devuelve `{ user, token, balance }`. El JWT contiene `sub` y `email`, y expira a las 2 horas.
-3. `AuthContext` guarda la respuesta en LocalStorage con la clave `snailBetSession`. Al recargar, recupera la sesión y consulta `GET /api/auth/me` con `Authorization: Bearer TOKEN`.
-4. `ProtectedRoute` permite el dashboard cuando hay sesión y redirige a `/login` cuando no la hay. Logout borra la sesión local y redirige a `/login`.
-5. `POST /api/wallet/top-up` recibe datos **exclusivamente ficticios** y un monto positivo con hasta dos decimales. La API obtiene el identificador y correo del usuario desde el JWT, invoca el mock SnailPay y acredita el saldo únicamente si devuelve `approved`. `AuthContext` guarda el nuevo saldo y la última operación en `snailBetSession`.
+Puedes ejecutarlos desde la raíz usando `-w`, que selecciona el workspace:
 
-El dashboard muestra nombre, saldo, donut de apuestas ganadas/perdidas y barras de victorias por caracol. Chart.js renderiza ambos canvas y libera sus instancias al desmontar los componentes de React. `apps/web/src/mock/dashboardStats.ts` define **seis carreras ficticias en un día**, con seis caracoles y un ganador por carrera. Los seis resultados producen Turbo 2, Luna 1, Rayo 1, Mora 1, Sol 1 y Nube 0 victorias. Hay una apuesta ficticia por carrera: 2 ganadas y 4 perdidas. Ambas gráficas se calculan de esos mismos resultados y no representan apuestas del usuario.
+| Comando | Qué hace |
+| --- | --- |
+| npm run dev -w @caracoles/api | Inicia únicamente la API en desarrollo. |
+| npm run dev -w @caracoles/web | Inicia únicamente Vite para el frontend. |
+| npm run build -w @caracoles/api | Compila únicamente el backend. |
+| npm run build -w @caracoles/web | Verifica los tipos del frontend y genera su build. |
+| npm run typecheck -w @caracoles/api | Verifica únicamente tipos del backend. |
+| npm run typecheck -w @caracoles/web | Verifica únicamente tipos del frontend. |
+| npm run start -w @caracoles/api | Inicia únicamente el backend compilado. |
+| npm run preview -w @caracoles/web | Sirve localmente el frontend compilado para revisarlo; requiere build previo. No inicia la API. |
 
-## SnailPay simulado
+El proxy `/api` está configurado en el servidor de desarrollo de Vite. Para preview o despliegue se necesita configurar cómo llegará el frontend a la API; `preview` no define ese despliegue. No existe un script `preview` en la raíz.
 
-Requiere `Authorization: Bearer TOKEN` en `POST /api/wallet/top-up`. Ejemplo de cuerpo:
+## Tests implementados
 
-```json
-{
-  "card_number": "1234123412341234",
-  "expiration_date": "12/26",
-  "cvv": "543",
-  "full_name": "Isabel Lovera",
-  "transaction_amount": 125.5
+| Archivo y caso | Qué comprueba | Motivo de su elección |
+| --- | --- | --- |
+| apps/api/test/auth.test.ts — registro correcto | Crea y persiste el usuario; la respuesta no contiene contraseña ni hash. | Cubre la creación de cuenta y la exclusión de datos sensibles. |
+| Mismo archivo — correo duplicado | El segundo registro devuelve AppError con 409 y EMAIL_TAKEN. | Cubre una validación importante del registro. |
+| Mismo archivo — login válido | Devuelve el usuario, saldo cero y un JWT cuyos datos corresponden a la cuenta. | Cubre el acceso y la emisión de sesión. |
+| apps/web/test/storage.test.ts — persistencia de sesión | Guardar y cargar recupera la misma sesión. | Cubre el requisito de conservar datos en LocalStorage. |
+
+Los tests de autenticación usan un archivo temporal distinto por caso y lo eliminan al terminar. El test de almacenamiento usa una implementación de LocalStorage en memoria. Son pruebas de servicios y utilidades: no recorren la interfaz ni los endpoints HTTP. Aún no cubren SnailPay, contraseñas incorrectas ni expiración de sesión.
+
+Se confirmó su implementación leyendo el código; no se certifica aquí que hayan pasado en ejecución.
+
+## Correcciones pendientes: dónde y cómo aplicarlas
+
+Estos cambios son instrucciones; todavía no se han aplicado en GitHub.
+
+### 1. Limpiar la sesión cuando una recarga devuelve 401
+
+En `apps/web/src/context/AuthContext.tsx`, dentro de `topUp`, sustituye la línea que llama a `walletService.topUp` por:
+
+```tsx
+let result: SnailPayOperation;
+try {
+  result = await walletService.topUp(session.token, payment);
+} catch (cause) {
+  if (
+    cause instanceof ApiRequestError &&
+    cause.status === 401 &&
+    loadSession()?.token === session.token
+  ) {
+    logout();
+  }
+  throw cause;
 }
 ```
 
-El nombre puede ser cualquier texto no vacío; el monto puede ser cualquier número positivo con hasta dos decimales. El correo e identificador del pagador **no** se aceptan del cuerpo: se obtienen de la sesión autenticada.
+Mantén el resto de la función. La comparación de tokens evita borrar una sesión nueva si la respuesta pertenece a una anterior. ProtectedRoute redirigirá al login al limpiar la sesión.
 
-| Datos ficticios                                            | HTTP | `status`   | `status_detail`         | Efecto                 |
-| ---------------------------------------------------------- | ---: | ---------- | ----------------------- | ---------------------- |
-| Tarjeta `1234123412341234`, vencimiento `12/26`, CVV `543` |  200 | `approved` | `accredited`            | Suma el monto al saldo |
-| Tarjeta `0000000000000000`, vencimiento `12/26`, CVV `000` |  402 | `rejected` | `card_declined`         | Ninguno                |
-| Campos faltantes, vencimiento distinto o monto no válido   |  422 | `rejected` | `invalid_payment_data`  | Ninguno                |
-| Otra combinación de tarjeta/CVV                            |  422 | `rejected` | `unsupported_test_card` | Ninguno                |
-| Saldo fuera del límite numérico seguro                     |  422 | `rejected` | `balance_limit`         | Ninguno                |
-| API iniciada con `SNAILPAY_MODE=system_error`              |  503 | `error`    | `gateway_unavailable`   | Ninguno                |
+### 2. Rechazar una recarga que se redondea a cero centavos
 
-Para simular un error interno, agrega `SNAILPAY_MODE=system_error` a `apps/api/.env` y reinicia la API. El mock responderá 503 a todas las solicitudes de recarga y no acreditará ninguna. Quita esa variable y reinicia para volver al modo normal.
+En `apps/api/src/utils/money.ts`, añade `cents <= 0` a la condición de rechazo:
 
-Cada respuesta de operación, incluso las rechazadas y las de error interno, contiene `id` (UUID), `status`, `status_detail`, `transaction_amount` (MXN), `date_created` (ISO 8601), `authorization_code` (cadena solo si se aprueba; `null` de otro modo), `reference` (`SNP-` más ocho caracteres), `payer_id`, `payer_email`, `card_number` y `cvv`. Una aprobación incluye además `balance`. Estos dos últimos campos contienen **solo datos ficticios**: si se ingresa una tarjeta o CVV desconocidos, la respuesta usa los valores ficticios `0000000000000000` y `000` respectivamente, sin reflejar ni almacenar el dato recibido. El servidor no conserva números de tarjeta ni CVV; el navegador guarda los de la **última respuesta** en `snailBetSession.lastPayment`, tal como requiere esta prueba. Nunca ingreses datos financieros reales.
+```ts
+if (
+  cents <= 0 ||
+  !Number.isSafeInteger(cents) ||
+  Math.abs(cents / 100 - value) > 1e-9
+) return null;
+```
 
-## Persistencia y seguridad
+Así, `toCents(0.0000000001)` se rechaza en lugar de devolver cero.
 
-Sin base de datos, el repositorio escribe usuarios en `apps/api/data/users.json`, creado automáticamente y excluido de Git. Los usuarios sobreviven a reinicios del servidor. El archivo contiene `passwordHash`, nunca contraseñas en texto plano. `apps/api/.env` también está excluido de Git.
+### 3. Conservar el error 413 para solicitudes demasiado grandes
 
-Para pruebas aisladas se puede definir `USERS_FILE` con la ruta de otro archivo JSON, sin tocar los usuarios locales.
+En `apps/api/src/utils/error-handler.ts`, antes de `console.error(error)`, añade:
 
-LocalStorage conserva usuario público, JWT, saldo y última operación de SnailPay con sus valores **ficticios** de tarjeta y CVV. Se usa aquí por requisito de la evaluación. En producción se evaluaría guardar el token en una cookie `HttpOnly` y `Secure` para reducir su exposición ante XSS; tampoco se guardarían números de tarjeta ni CVV en LocalStorage. El saldo, inicialmente $0, se guarda también en el repositorio del servidor; el saldo de LocalStorage es una copia para la interfaz, no una fuente segura para operaciones financieras.
+```ts
+if (
+  typeof error === "object" &&
+  error !== null &&
+  "type" in error &&
+  error.type === "entity.too.large"
+) {
+  response.status(413).json({
+    error: {
+      code: "PAYLOAD_TOO_LARGE",
+      message: "La solicitud supera el tamaño permitido.",
+    },
+  } satisfies ApiError);
+  return;
+}
+```
 
-SnailPay no mueve dinero real ni se conecta a servicios externos.
+Después de aplicar los cambios, ejecuta `npm run typecheck`, `npm test` y `npm run build`. Los cuatro tests actuales no cubren estas correcciones: comprueba además una recarga con token vencido, el monto diminuto y una petición que supere 16 KB.
 
-El logout elimina el token del navegador. Como JWT es sin estado, un token copiado antes del logout seguiría válido hasta expirar; la revocación de tokens requeriría infraestructura adicional.
-
-## Respuestas principales
-
-| Caso                            | Estado  | Respuesta                                     |
-| ------------------------------- | ------- | --------------------------------------------- |
-| Registro correcto               | 201     | `{ "user": { "id", "fullName", "email" } }`   |
-| Campos inválidos                | 400     | `error.message` y `error.fields`              |
-| Correo duplicado                | 409     | `EMAIL_TAKEN`                                 |
-| Credenciales incorrectas        | 401     | `INVALID_CREDENTIALS`                         |
-| JWT ausente, inválido o vencido | 401     | `TOKEN_REQUIRED` o `INVALID_TOKEN`            |
-| Operación SnailPay aprobada     | 200     | Objeto de operación con `balance` actualizado |
-| Operación SnailPay rechazada    | 402/422 | Objeto de operación; saldo sin cambios        |
-| Error interno simulado          | 503     | Objeto de operación; saldo sin cambios        |
-
-Para producción faltarían controles como límites de intentos, gestión de recuperación de contraseña y una base de datos con acceso concurrente. No forman parte de esta prueba base.
