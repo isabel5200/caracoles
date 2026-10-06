@@ -1,5 +1,11 @@
 import { createContext, useEffect, useState, type ReactNode } from "react";
 import * as authService from "../services/auth.service";
+import * as walletService from "../services/wallet.service";
+import { ApiRequestError } from "../services/http";
+import type {
+  SnailPayChargeRequest,
+  SnailPayOperation,
+} from "@caracoles/shared";
 import type {
   AuthSession,
   AuthUser,
@@ -16,6 +22,7 @@ export type AuthContextValue = {
   login: (credentials: LoginInput) => Promise<void>;
   register: (data: RegisterInput) => Promise<void>;
   logout: () => void;
+  topUp: (payment: SnailPayChargeRequest) => Promise<SnailPayOperation>;
 };
 
 export const AuthContext = createContext<AuthContextValue | null>(null);
@@ -41,10 +48,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       })
       .catch((cause: unknown) => {
         if (!active) return;
-        if (
-          cause instanceof authService.AuthRequestError &&
-          cause.status === 401
-        ) {
+        if (cause instanceof ApiRequestError && cause.status === 401) {
           clearSession();
           setSession(null);
         }
@@ -72,6 +76,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setSession(null);
   }
 
+  async function topUp(
+    payment: SnailPayChargeRequest,
+  ): Promise<SnailPayOperation> {
+    if (!session) throw new ApiRequestError("Inicia sesión para cargar saldo.");
+    const result = await walletService.topUp(session.token, payment);
+    const stored = loadSession();
+    if (!stored || stored.token !== session.token) {
+      throw new ApiRequestError("La sesión cambió. Inicia sesión de nuevo.");
+    }
+    const nextSession = {
+      ...stored,
+      lastPayment: result,
+      balance: result.status === "approved" ? result.balance! : stored.balance,
+    };
+    saveSession(nextSession);
+    setSession(nextSession);
+    return result;
+  }
+
   return (
     <AuthContext.Provider
       value={{
@@ -82,6 +105,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         login,
         register,
         logout,
+        topUp,
       }}
     >
       {children}

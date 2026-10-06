@@ -15,7 +15,7 @@ import type { StoredUser } from "../types/auth.types.js";
 import { AppError } from "../utils/app-error.js";
 import { createToken } from "../utils/jwt.js";
 
-const INITIAL_BALANCE = 1000;
+const INITIAL_BALANCE = 0;
 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 function publicUser(user: StoredUser): AuthUser {

@@ -1,19 +1,30 @@
 import { randomUUID } from "node:crypto";
 import { mkdir, readFile, rename, rm, writeFile } from "node:fs/promises";
-import { dirname, join } from "node:path";
+import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import type { StoredUser } from "../types/auth.types.js";
 import { AppError } from "../utils/app-error.js";
 
-const usersPath = fileURLToPath(
+const defaultUsersPath = fileURLToPath(
   new URL("../../data/users.json", import.meta.url),
 );
+const usersPath = () =>
+  process.env.USERS_FILE ? resolve(process.env.USERS_FILE) : defaultUsersPath;
 let pendingWrite: Promise<void> = Promise.resolve();
+
+function enqueueWrite<T>(operation: () => Promise<T>): Promise<T> {
+  const result = pendingWrite.then(operation);
+  pendingWrite = result.then(
+    () => undefined,
+    () => undefined,
+  );
+  return result;
+}
 
 async function readUsers(): Promise<StoredUser[]> {
   let contents: string;
   try {
-    contents = await readFile(usersPath, "utf8");
+    contents = await readFile(usersPath(), "utf8");
   } catch (error) {
     if (
       typeof error === "object" &&
@@ -42,8 +53,23 @@ export async function findUserById(
   return (await readUsers()).find((user) => user.id === id);
 }
 
+async function writeUsers(users: StoredUser[]): Promise<void> {
+  const destination = usersPath();
+  await mkdir(dirname(destination), { recursive: true });
+  const temporaryPath = join(dirname(destination), `users-${randomUUID()}.tmp`);
+  await writeFile(temporaryPath, JSON.stringify(users, null, 2), {
+    flag: "wx",
+  });
+  try {
+    await rename(temporaryPath, destination);
+  } catch (error) {
+    await rm(temporaryPath, { force: true });
+    throw error;
+  }
+}
+
 export function createUser(user: StoredUser): Promise<void> {
-  const operation = pendingWrite.then(async () => {
+  return enqueueWrite(async () => {
     const users = await readUsers();
     if (users.some((existing) => existing.email === user.email)) {
       throw new AppError(
@@ -55,18 +81,29 @@ export function createUser(user: StoredUser): Promise<void> {
         },
       );
     }
-    await mkdir(dirname(usersPath), { recursive: true });
-    const temporaryPath = join(dirname(usersPath), `users-${randomUUID()}.tmp`);
-    await writeFile(temporaryPath, JSON.stringify([...users, user], null, 2), {
-      flag: "wx",
-    });
-    try {
-      await rename(temporaryPath, usersPath);
-    } catch (error) {
-      await rm(temporaryPath, { force: true });
-      throw error;
-    }
+    await writeUsers([...users, user]);
   });
-  pendingWrite = operation.catch(() => undefined);
-  return operation;
+}
+
+export function creditBalance(
+  userId: string,
+  amountCents: number,
+): Promise<number> {
+  return enqueueWrite(async () => {
+    const users = await readUsers();
+    const user = users.find((candidate) => candidate.id === userId);
+    if (!user)
+      throw new AppError(401, "INVALID_TOKEN", "La sesión ya no es válida.");
+    const nextCents = Math.round(user.balance * 100) + amountCents;
+    if (!Number.isSafeInteger(nextCents)) {
+      throw new AppError(
+        400,
+        "BALANCE_LIMIT",
+        "El saldo excede el límite permitido.",
+      );
+    }
+    user.balance = nextCents / 100;
+    await writeUsers(users);
+    return user.balance;
+  });
 }

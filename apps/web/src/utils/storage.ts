@@ -1,4 +1,5 @@
 import type { AuthSession } from "../types/auth.types";
+import { isValidBalance } from "./money";
 
 const SESSION_KEY = "snailBetSession";
 
@@ -11,9 +12,7 @@ export function loadSession(): AuthSession | null {
     const session = value as Partial<AuthSession>;
     if (
       typeof session.token !== "string" ||
-      typeof session.balance !== "number" ||
-      !Number.isSafeInteger(session.balance) ||
-      session.balance < 0 ||
+      !isValidBalance(session.balance) ||
       typeof session.user !== "object" ||
       session.user === null ||
       typeof session.user.id !== "string" ||
@@ -21,6 +20,16 @@ export function loadSession(): AuthSession | null {
       typeof session.user.email !== "string"
     )
       return null;
+    if (
+      session.lastPayment &&
+      (typeof session.lastPayment !== "object" ||
+        !["approved", "rejected", "error"].includes(
+          session.lastPayment.status,
+        ) ||
+        typeof session.lastPayment.card_number !== "string" ||
+        typeof session.lastPayment.cvv !== "string")
+    )
+      delete session.lastPayment;
     return session as AuthSession;
   } catch {
     return null;
