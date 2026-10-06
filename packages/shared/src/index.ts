@@ -1,24 +1,32 @@
-export type Snail = {
+export type AuthUser = {
   id: string;
-  name: string;
-  color: string;
-  emoji: string;
+  fullName: string;
+  email: string;
 };
 
-export type RaceRequest = {
-  snailId: string;
-  stake: number;
+export type AuthSession = {
+  user: AuthUser;
+  token: string;
+  balance: number;
 };
 
-export type RaceResult = {
-  id: string;
-  selectedSnailId: string;
-  winnerSnailId: string;
-  stake: number;
-  payout: number;
-  createdAt: string;
+export type RegisterInput = {
+  fullName: string;
+  email: string;
+  password: string;
+  passwordConfirmation: string;
+};
+
+export type LoginInput = {
+  email: string;
+  password: string;
+};
+
+export type CurrentUserResponse = {
+  user: AuthUser;
+  balance: number;
 };
 
 export type ApiError = {
-  error: { code: string; message: string };
+  error: { code: string; message: string; fields?: Record<string, string> };
 };
