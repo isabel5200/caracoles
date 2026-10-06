@@ -33,21 +33,27 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     const stored = loadSession();
+
     if (!stored) {
       setIsInitializing(false);
       return;
     }
+
     let active = true;
+
     authService
       .getCurrentUser(stored.token)
       .then(({ user, balance }) => {
         if (!active) return;
+
         const refreshed = { ...stored, user, balance };
+
         saveSession(refreshed);
         setSession(refreshed);
       })
       .catch((cause: unknown) => {
         if (!active) return;
+
         if (cause instanceof ApiRequestError && cause.status === 401) {
           clearSession();
           setSession(null);
@@ -80,11 +86,28 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     payment: SnailPayChargeRequest,
   ): Promise<SnailPayOperation> {
     if (!session) throw new ApiRequestError("Inicia sesión para cargar saldo.");
-    const result = await walletService.topUp(session.token, payment);
+
+    let result: SnailPayOperation;
+
+    try {
+      result = await walletService.topUp(session.token, payment);
+    } catch (cause) {
+      if (
+        cause instanceof ApiRequestError &&
+        cause.status === 401 &&
+        loadSession()?.token === session.token
+      ) {
+        logout();
+      }
+      throw cause;
+    }
+
     const stored = loadSession();
+
     if (!stored || stored.token !== session.token) {
       throw new ApiRequestError("La sesión cambió. Inicia sesión de nuevo.");
     }
+
     const nextSession = {
       ...stored,
       lastPayment: result,

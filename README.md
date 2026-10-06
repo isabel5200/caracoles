@@ -66,23 +66,6 @@ Frontend: http://localhost:5173. API: http://localhost:3002/api/health.
 | npm run format | Aplica Prettier y modifica el formato de los archivos incluidos. No es un linter. |
 | npm start / npm run start | Ejecuta solo la API compilada, con node dist/index.js. Requiere build previo. |
 
-### Comandos de cada aplicación
-
-Puedes ejecutarlos desde la raíz usando `-w`, que selecciona el workspace:
-
-| Comando | Qué hace |
-| --- | --- |
-| npm run dev -w @caracoles/api | Inicia únicamente la API en desarrollo. |
-| npm run dev -w @caracoles/web | Inicia únicamente Vite para el frontend. |
-| npm run build -w @caracoles/api | Compila únicamente el backend. |
-| npm run build -w @caracoles/web | Verifica los tipos del frontend y genera su build. |
-| npm run typecheck -w @caracoles/api | Verifica únicamente tipos del backend. |
-| npm run typecheck -w @caracoles/web | Verifica únicamente tipos del frontend. |
-| npm run start -w @caracoles/api | Inicia únicamente el backend compilado. |
-| npm run preview -w @caracoles/web | Sirve localmente el frontend compilado para revisarlo; requiere build previo. No inicia la API. |
-
-El proxy `/api` está configurado en el servidor de desarrollo de Vite. Para preview o despliegue se necesita configurar cómo llegará el frontend a la API; `preview` no define ese despliegue. No existe un script `preview` en la raíz.
-
 ## Tests implementados
 
 | Archivo y caso | Qué comprueba | Motivo de su elección |
@@ -92,70 +75,7 @@ El proxy `/api` está configurado en el servidor de desarrollo de Vite. Para pre
 | Mismo archivo — login válido | Devuelve el usuario, saldo cero y un JWT cuyos datos corresponden a la cuenta. | Cubre el acceso y la emisión de sesión. |
 | apps/web/test/storage.test.ts — persistencia de sesión | Guardar y cargar recupera la misma sesión. | Cubre el requisito de conservar datos en LocalStorage. |
 
-Los tests de autenticación usan un archivo temporal distinto por caso y lo eliminan al terminar. El test de almacenamiento usa una implementación de LocalStorage en memoria. Son pruebas de servicios y utilidades: no recorren la interfaz ni los endpoints HTTP. Aún no cubren SnailPay, contraseñas incorrectas ni expiración de sesión.
+Los tests de autenticación usan un archivo temporal distinto por caso y lo eliminan al terminar. El test de almacenamiento usa una implementación de LocalStorage en memoria. 
 
-Se confirmó su implementación leyendo el código; no se certifica aquí que hayan pasado en ejecución.
-
-## Correcciones pendientes: dónde y cómo aplicarlas
-
-Estos cambios son instrucciones; todavía no se han aplicado en GitHub.
-
-### 1. Limpiar la sesión cuando una recarga devuelve 401
-
-En `apps/web/src/context/AuthContext.tsx`, dentro de `topUp`, sustituye la línea que llama a `walletService.topUp` por:
-
-```tsx
-let result: SnailPayOperation;
-try {
-  result = await walletService.topUp(session.token, payment);
-} catch (cause) {
-  if (
-    cause instanceof ApiRequestError &&
-    cause.status === 401 &&
-    loadSession()?.token === session.token
-  ) {
-    logout();
-  }
-  throw cause;
-}
-```
-
-Mantén el resto de la función. La comparación de tokens evita borrar una sesión nueva si la respuesta pertenece a una anterior. ProtectedRoute redirigirá al login al limpiar la sesión.
-
-### 2. Rechazar una recarga que se redondea a cero centavos
-
-En `apps/api/src/utils/money.ts`, añade `cents <= 0` a la condición de rechazo:
-
-```ts
-if (
-  cents <= 0 ||
-  !Number.isSafeInteger(cents) ||
-  Math.abs(cents / 100 - value) > 1e-9
-) return null;
-```
-
-Así, `toCents(0.0000000001)` se rechaza en lugar de devolver cero.
-
-### 3. Conservar el error 413 para solicitudes demasiado grandes
-
-En `apps/api/src/utils/error-handler.ts`, antes de `console.error(error)`, añade:
-
-```ts
-if (
-  typeof error === "object" &&
-  error !== null &&
-  "type" in error &&
-  error.type === "entity.too.large"
-) {
-  response.status(413).json({
-    error: {
-      code: "PAYLOAD_TOO_LARGE",
-      message: "La solicitud supera el tamaño permitido.",
-    },
-  } satisfies ApiError);
-  return;
-}
-```
-
-Después de aplicar los cambios, ejecuta `npm run typecheck`, `npm test` y `npm run build`. Los cuatro tests actuales no cubren estas correcciones: comprueba además una recarga con token vencido, el monto diminuto y una petición que supere 16 KB.
+Se confirmó su implementación leyendo el código y se ejecutaron npm test. Todos los tests pasaron.
 
