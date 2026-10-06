@@ -268,11 +268,12 @@ button:disabled {
 }
 .chart-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 20px;
 }
 .chart-card {
   min-height: 300px;
+  min-width: 0;
 }
 .chart-card-heading h3 {
   margin: 0;
@@ -362,7 +363,7 @@ button:disabled {
 }
 @media (max-width: 830px) {
   .chart-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
   }
 }
 @media (max-width: 560px) {
@@ -373,6 +374,9 @@ button:disabled {
   .chart-card {
     padding: 24px;
   }
+  .chart-card-heading {
+    flex-wrap: wrap;
+  }
   .stats-heading {
     align-items: start;
     flex-direction: column;
@@ -382,6 +386,7 @@ button:disabled {
   }
   .chart-legend {
     width: 100%;
+    min-width: 0;
   }
   .sample-badge {
     white-space: normal;

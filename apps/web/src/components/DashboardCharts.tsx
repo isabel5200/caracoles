@@ -69,8 +69,8 @@ export function BetResultsChart() {
 
   return (
     <div className="donut-layout">
-      <div className="relative h-[190px] w-[190px] shrink-0">
-        <div className="relative h-full w-full">
+      <div className="relative aspect-square w-[190px] max-w-full shrink-0">
+        <div className="relative aspect-square w-full">
           <canvas
             ref={canvasRef}
             role="img"
