@@ -9,6 +9,7 @@
     "dev": "concurrently -n api,web -c cyan,magenta \"npm run dev -w @caracoles/api\" \"npm run dev -w @caracoles/web\"",
     "build": "npm run build -w @caracoles/api && npm run build -w @caracoles/web",
     "typecheck": "npm run typecheck -w @caracoles/api && npm run typecheck -w @caracoles/web",
+    "test": "tsc -p tsconfig.test.json && node --import tsx --test apps/api/test/auth.test.ts apps/web/test/storage.test.ts",
     "format": "prettier --write \"apps/**/*.{ts,tsx,css,json,html}\" \"packages/**/*.{ts,json}\" \"*.{json,md}\"",
     "start": "npm run start -w @caracoles/api"
   },

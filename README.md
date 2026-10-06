@@ -28,7 +28,11 @@ Para comprobar Tailwind manualmente, abre <http://localhost:5173/login>: el fond
 
 Para comprobar shadcn/ui, envía el formulario de login vacío: verás un Alert. Los campos son Input con Label y el botón de envío es Button; en el dashboard el saldo aparece dentro de Card con Badge.
 
-También están disponibles `npm run typecheck`, `npm run build` y `npm run format`. No hay un comando de lint configurado en esta base.
+También están disponibles `npm run typecheck`, `npm run build`, `npm run format` y `npm test`. No hay un comando de lint configurado en esta base.
+
+## Pruebas
+
+Ejecuta `npm test` desde la raíz. Son cuatro pruebas en TypeScript usando el ejecutor de Node y `tsx`, que ya era una dependencia del backend. Tres comprueban registro, correo duplicado e inicio de sesión con un archivo temporal de usuarios; la cuarta guarda y recupera una sesión mediante la utilidad de LocalStorage y una implementación mínima en memoria. No requieren levantar la API ni el frontend.
 
 ## Estructura
 
