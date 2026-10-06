@@ -1,4 +1,4 @@
-# Pista Lenta — Documentación
+# Documentación
 
 Repositorio: https://github.com/isabel5200/maria-2939 
 
