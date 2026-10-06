@@ -2,7 +2,7 @@
 
 Base Full-Stack con React, Express y TypeScript estricto. Incluye registro, inicio de sesión, persistencia local, dashboard privado y cierre de sesión. Cada usuario nuevo empieza con **$0**. Las gráficas usan datos fijos de demostración: no hay flujo para apostar ni lógica que ejecute carreras.
 
-La interfaz usa Tailwind CSS v4 mediante `@tailwindcss/vite`. El plugin se agrega junto a React en `apps/web/vite.config.ts` y el CSS global importa `tailwindcss` desde `apps/web/src/styles.css`; no hace falta un archivo de configuración adicional para estos estilos. Se mantienen reglas CSS propias para las gráficas y el formulario de SnailPay.
+La interfaz usa Tailwind CSS v4 mediante `@tailwindcss/vite`. El plugin se agrega junto a React en `apps/web/vite.config.ts` y el CSS global importa `tailwindcss` desde `apps/web/src/styles.css`; no hace falta un archivo de configuración adicional para estos estilos. Chart.js dibuja las gráficas; el CSS propio mantiene su disposición, leyenda y el formulario de SnailPay.
 
 shadcn/ui se inicializó en `apps/web`: `components.json` apunta al CSS global y el alias `@/` resuelve a `apps/web/src` tanto en Vite como en TypeScript. Se agregaron únicamente Button, Input, Label, Card, Alert y Badge bajo `src/components/ui/`. Login y registro usan estos componentes sin cambiar sus validaciones; el saldo usa Card y Badge. Como el proyecto usa TypeScript 7, el alias en `tsconfig.json` usa `paths` sin `baseUrl`.
 
@@ -55,7 +55,7 @@ packages/shared/             Contratos TypeScript compartidos
 4. `ProtectedRoute` permite el dashboard cuando hay sesión y redirige a `/login` cuando no la hay. Logout borra la sesión local y redirige a `/login`.
 5. `POST /api/wallet/top-up` recibe datos **exclusivamente ficticios** y un monto positivo con hasta dos decimales. La API obtiene el identificador y correo del usuario desde el JWT, invoca el mock SnailPay y acredita el saldo únicamente si devuelve `approved`. `AuthContext` guarda el nuevo saldo y la última operación en `snailBetSession`.
 
-El dashboard muestra nombre, saldo, donut de apuestas ganadas/perdidas y barras de victorias por caracol. `apps/web/src/mock/dashboardStats.ts` define **seis carreras ficticias en un día**, con seis caracoles y un ganador por carrera. Los seis resultados producen Turbo 2, Luna 1, Rayo 1, Mora 1, Sol 1 y Nube 0 victorias. Hay una apuesta ficticia por carrera: 2 ganadas y 4 perdidas. Ambas gráficas se calculan de esos mismos resultados y no representan apuestas del usuario.
+El dashboard muestra nombre, saldo, donut de apuestas ganadas/perdidas y barras de victorias por caracol. Chart.js renderiza ambos canvas y libera sus instancias al desmontar los componentes de React. `apps/web/src/mock/dashboardStats.ts` define **seis carreras ficticias en un día**, con seis caracoles y un ganador por carrera. Los seis resultados producen Turbo 2, Luna 1, Rayo 1, Mora 1, Sol 1 y Nube 0 victorias. Hay una apuesta ficticia por carrera: 2 ganadas y 4 perdidas. Ambas gráficas se calculan de esos mismos resultados y no representan apuestas del usuario.
 
 ## SnailPay simulado
 

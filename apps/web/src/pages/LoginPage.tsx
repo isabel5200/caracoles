@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from "react";
+import { useState, type SubmitEvent } from "react";
 import { Link, Navigate, useLocation, useNavigate } from "react-router";
 import { AuthLayout } from "../components/AuthLayout";
 import { LoadingSpiral } from "../components/LoadingSpiral";
@@ -34,17 +34,21 @@ export function LoginPage() {
     return <div className="page-loading">Verificando sesión…</div>;
   if (isAuthenticated) return <Navigate to="/" replace />;
 
-  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
+  async function handleSubmit(event: SubmitEvent<HTMLFormElement>) {
     event.preventDefault();
+
     if (!form.email.trim() || !form.password) {
       setError("Ingresa tu correo y contraseña.");
       return;
     }
+
     setSubmitting(true);
     setError("");
+
     try {
       await waitForLoadingCue();
       await login(form);
+
       navigate("/", { replace: true });
     } catch (cause) {
       setError(
@@ -67,6 +71,7 @@ export function LoginPage() {
         <CardTitle className="font-serif text-3xl font-semibold tracking-tight text-slate-950">
           <h2>Iniciar sesión</h2>
         </CardTitle>
+
         <CardDescription className="mt-1 text-slate-600">
           ¿Aún no tienes cuenta?{" "}
           <Link
@@ -77,6 +82,7 @@ export function LoginPage() {
           </Link>
         </CardDescription>
       </CardHeader>
+
       <CardContent className="px-6 sm:px-9">
         {registered && (
           <Alert
@@ -88,6 +94,7 @@ export function LoginPage() {
             </AlertDescription>
           </Alert>
         )}
+
         <form className="flex flex-col" onSubmit={handleSubmit} noValidate>
           <Label className="mt-2 mb-2 text-slate-700" htmlFor="login-email">
             Correo electrónico
@@ -102,6 +109,7 @@ export function LoginPage() {
               setForm({ ...form, email: event.target.value })
             }
           />
+
           <Label className="mt-5 mb-2 text-slate-700" htmlFor="login-password">
             Contraseña
           </Label>

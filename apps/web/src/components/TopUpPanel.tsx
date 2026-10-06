@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from "react";
+import { useState, type SubmitEvent } from "react";
 import type {
   SnailPayChargeRequest,
   SnailPayStatusDetail,
@@ -27,7 +27,7 @@ export function TopUpPanel() {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
 
-  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
+  async function handleSubmit(event: SubmitEvent<HTMLFormElement>) {
     event.preventDefault();
     setError("");
     setSuccess("");
@@ -71,9 +71,6 @@ export function TopUpPanel() {
           <span className="section-kicker">PASARELA SIMULADA</span>
           <h2 id="topup-title">Carga saldo con SnailPay</h2>
         </div>
-        <span className="snailpay-mark" aria-hidden="true">
-          🐌
-        </span>
       </div>
       <p>
         Usa exclusivamente los datos ficticios de prueba. SnailPay no procesa

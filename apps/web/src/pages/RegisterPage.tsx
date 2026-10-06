@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from "react";
+import { useState, type SubmitEvent } from "react";
 import { Link, Navigate, useNavigate } from "react-router";
 import { AuthLayout } from "../components/AuthLayout";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -60,7 +60,7 @@ export function RegisterPage() {
     setFields((current) => ({ ...current, [field]: "" }));
   }
 
-  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
+  async function handleSubmit(event: SubmitEvent<HTMLFormElement>) {
     event.preventDefault();
     const validation = validate(form);
     setFields(validation);

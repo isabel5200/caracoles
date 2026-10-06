@@ -291,36 +291,6 @@ button:disabled {
   gap: 22px;
   margin-top: 28px;
 }
-.donut-chart {
-  width: 190px;
-  height: 190px;
-  border-radius: 50%;
-  padding: 25px;
-  flex-shrink: 0;
-  display: grid;
-  place-items: center;
-}
-.donut-center {
-  width: 100%;
-  height: 100%;
-  border-radius: 50%;
-  background: #fffdf8;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-}
-.donut-center strong {
-  font-size: 39px;
-  line-height: 1;
-}
-.donut-center small {
-  color: #8c9b8e;
-  font-size: 9px;
-  letter-spacing: 0.15em;
-  font-weight: 800;
-  margin-top: 5px;
-}
 .chart-legend {
   min-width: 130px;
   flex: 1;
@@ -348,46 +318,6 @@ button:disabled {
 }
 .legend-dot.lost {
   background: #e6a07a;
-}
-.bar-chart {
-  list-style: none;
-  padding: 0;
-  margin: 37px 0 18px;
-}
-.bar-chart li {
-  display: grid;
-  grid-template-columns: 72px 1fr 25px;
-  align-items: center;
-  gap: 15px;
-  margin-bottom: 23px;
-  font-size: 13px;
-}
-.bar-name {
-  display: flex;
-  align-items: center;
-  gap: 7px;
-  font-weight: 700;
-}
-.bar-name i {
-  display: inline-block;
-  width: 9px;
-  height: 9px;
-  border-radius: 50%;
-}
-.bar-track {
-  display: block;
-  height: 16px;
-  border-radius: 999px;
-  background: #edf0e9;
-  overflow: hidden;
-}
-.bar-track > span {
-  display: block;
-  height: 100%;
-  border-radius: inherit;
-}
-.bar-chart li > strong {
-  text-align: right;
 }
 .chart-note {
   color: #92a096;
@@ -452,10 +382,6 @@ button:disabled {
   }
   .chart-legend {
     width: 100%;
-  }
-  .bar-chart li {
-    grid-template-columns: 65px 1fr 22px;
-    gap: 10px;
   }
   .sample-badge {
     white-space: normal;

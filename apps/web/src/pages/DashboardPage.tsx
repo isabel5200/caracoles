@@ -1,12 +1,17 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router";
+import {
+  BetResultsChart,
+  SnailVictoriesChart,
+} from "../components/DashboardCharts";
 import { LoadingSpiral } from "../components/LoadingSpiral";
 import { TopUpPanel } from "../components/TopUpPanel";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { useAuth } from "../hooks/useAuth";
-import { betSummary, raceCount, snailVictories } from "../mock/dashboardStats";
+import { raceCount } from "../mock/dashboardStats";
 import { waitForLoadingCue } from "../utils/loading";
+import caracol from "../assets/caracol.png";
 
 const currency = new Intl.NumberFormat("es-MX", {
   style: "currency",
@@ -19,9 +24,6 @@ export function DashboardPage() {
   const { user, balance, logout } = useAuth();
   const navigate = useNavigate();
   const [isLoggingOut, setIsLoggingOut] = useState(false);
-  const total = betSummary.won + betSummary.lost;
-  const wonPercent = Math.round((betSummary.won / total) * 100);
-  const maxWins = Math.max(...snailVictories.map((snail) => snail.wins));
 
   async function handleLogout() {
     if (isLoggingOut) return;
@@ -38,7 +40,7 @@ export function DashboardPage() {
           className="flex items-center gap-2 text-lg font-black tracking-widest text-white transition-colors hover:text-emerald-200 focus-visible:rounded focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-emerald-300"
           to="/"
         >
-          <span className="text-2xl">🐌</span>
+          <img src={caracol} alt="" className="h-8 w-8 object-contain" />
           <span>
             PISTA LENTA<span className="text-amber-300">.</span>
           </span>
@@ -71,9 +73,6 @@ export function DashboardPage() {
               estadísticas.
             </p>
           </div>
-          <div className="dashboard-avatar" aria-hidden="true">
-            🐌
-          </div>
         </div>
 
         <div className="grid gap-5 lg:grid-cols-[0.85fr_1.15fr]">
@@ -82,22 +81,22 @@ export function DashboardPage() {
             role="region"
             aria-label="Saldo actual"
           >
-            <span
-              className="pointer-events-none absolute -right-4 -bottom-14 text-[10rem] opacity-10"
+            <img
+              src={caracol}
+              alt=""
+              className="pointer-events-none absolute -right-7 -bottom-10 z-0 h-56 w-56 rotate-[-6deg] object-contain opacity-40 brightness-75 drop-shadow-[0_16px_20px_rgba(0,0,0,0.3)] sm:h-64 sm:w-64"
               aria-hidden="true"
-            >
-              🐌
-            </span>
+            />
             <Badge
               variant="secondary"
-              className="relative mb-4 border border-emerald-800 bg-emerald-950 text-emerald-100"
+              className="relative z-10 mb-4 border border-emerald-800 bg-blue-950 text-emerald-100"
             >
               SALDO ACTUAL
             </Badge>
-            <strong className="relative text-5xl font-bold tracking-tight break-all sm:text-6xl">
+            <strong className="relative z-10 text-5xl font-bold tracking-tight break-all sm:text-6xl">
               {currency.format(balance ?? 0)}
             </strong>
-            <p className="relative mt-3 text-sm text-slate-300">
+            <p className="relative z-10 mt-3 text-sm text-slate-300">
               Disponible en tu cuenta de demostración
             </p>
           </Card>
@@ -119,61 +118,14 @@ export function DashboardPage() {
               <h3 id="bet-chart-title">Apuestas ganadas y perdidas</h3>
               <span>DEMOSTRACIÓN</span>
             </div>
-            <div className="donut-layout">
-              <div
-                className="donut-chart"
-                role="img"
-                aria-label={`${betSummary.won} apuestas ganadas y ${betSummary.lost} perdidas, datos simulados`}
-                style={{
-                  background: `conic-gradient(#418a6a 0 ${wonPercent}%, #e6a07a ${wonPercent}% 100%)`,
-                }}
-              >
-                <div className="donut-center">
-                  <strong>{total}</strong>
-                  <small>APUESTAS</small>
-                </div>
-              </div>
-              <div className="chart-legend">
-                <div>
-                  <i className="legend-dot won" />
-                  <span>Ganadas</span>
-                  <strong>{betSummary.won}</strong>
-                </div>
-                <div>
-                  <i className="legend-dot lost" />
-                  <span>Perdidas</span>
-                  <strong>{betSummary.lost}</strong>
-                </div>
-              </div>
-            </div>
+            <BetResultsChart />
           </section>
           <section className="chart-card" aria-labelledby="snail-chart-title">
             <div className="chart-card-heading">
               <h3 id="snail-chart-title">Victorias de los caracoles</h3>
               <span>DEMOSTRACIÓN</span>
             </div>
-            <ul
-              className="bar-chart"
-              aria-label="Victorias simuladas por caracol"
-            >
-              {snailVictories.map((snail) => (
-                <li key={snail.name}>
-                  <span className="bar-name">
-                    <i style={{ backgroundColor: snail.color }} />
-                    {snail.name}
-                  </span>
-                  <span className="bar-track">
-                    <span
-                      style={{
-                        width: `${(snail.wins / maxWins) * 100}%`,
-                        backgroundColor: snail.color,
-                      }}
-                    />
-                  </span>
-                  <strong>{snail.wins}</strong>
-                </li>
-              ))}
-            </ul>
+            <SnailVictoriesChart />
             <p className="chart-note">
               Una victoria por carrera. Las seis barras suman {raceCount}.
             </p>
@@ -183,7 +135,7 @@ export function DashboardPage() {
 
       <footer className="flex flex-col justify-between gap-2 bg-slate-900 px-6 py-6 text-xs tracking-wider text-slate-300 sm:flex-row sm:px-[5vw]">
         <span>PISTA LENTA © 2026</span>
-        <span>Una demo sin dinero real</span>
+        <span>DEMO</span>
       </footer>
     </div>
   );

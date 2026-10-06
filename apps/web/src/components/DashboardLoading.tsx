@@ -1,4 +1,5 @@
 import { LoadingSpiral } from "./LoadingSpiral";
+import caracol from "../assets/caracol.png";
 
 export function DashboardLoading() {
   return (
@@ -9,9 +10,11 @@ export function DashboardLoading() {
     >
       <header className="flex min-h-20 items-center bg-slate-900 px-6 py-4 text-white sm:px-[5vw]">
         <span className="flex items-center gap-2 text-lg font-black tracking-widest">
-          <span className="text-2xl" aria-hidden="true">
-            🐌
-          </span>
+          <img
+            src={caracol}
+            alt=""
+            className="h-8 w-8 object-contain"
+          />
           PISTA LENTA<span className="text-amber-300">.</span>
         </span>
       </header>
